@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 import 'package:habit_tracker/datetime/date_time.dart';
+import 'package:hive/hive.dart';
+
+import 'habit_alert_box.dart';
 
 class MonthlySummary extends StatelessWidget {
   final Map<DateTime, int>? datasets;
@@ -11,6 +14,7 @@ class MonthlySummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var _myBox = Hive.box("Habit_Database");
     return Container(
         child: HeatMap(
       startDate: createDateTimeObject(startDate),
@@ -38,8 +42,15 @@ class MonthlySummary extends StatelessWidget {
         10: Color.fromARGB(255, 179, 2, 79),
       },
       onClick: (value) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(value.toString())));
+        var habitList = _myBox.get(convertDateTimeToString(value)) ?? [];
+        showDialog(
+            context: context,
+            builder: (context) {
+              return HabitAlertBox(
+                habitList: habitList,
+                dateSelected: prettifyDate(value),
+              );
+            });
       },
     ));
   }
