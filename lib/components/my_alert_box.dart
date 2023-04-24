@@ -16,7 +16,7 @@ class MyAlertBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: Colors.pink.shade50,
+      backgroundColor: Colors.grey[100],
       content: TextField(
         controller: controller,
         style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),

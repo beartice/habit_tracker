@@ -129,6 +129,31 @@ class _HomePageState extends State<HomePage> {
         ),
         body: ListView(
           children: [
+            Center(
+                child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 32),
+                decoration: BoxDecoration(
+                    color: Colors.pink[500],
+                    borderRadius: BorderRadius.circular(12)),
+                child: const Text(
+                  "Welcome back!",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    shadows: <Shadow>[
+                      Shadow(
+                        offset: Offset(-1.0, 1.0),
+                        blurRadius: 5.0,
+                        color: Color.fromARGB(24, 0, 0, 0),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )),
             //monthly summary heatmap
             MonthlySummary(
                 datasets: db.heatMapDataSet,

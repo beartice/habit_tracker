@@ -19,7 +19,7 @@ class HabitTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(8),
       child: Slidable(
         endActionPane: ActionPane(
           motion: const StretchMotion(),
@@ -28,21 +28,24 @@ class HabitTile extends StatelessWidget {
             SlidableAction(
               onPressed: settingsTapped,
               backgroundColor: Colors.grey.shade600,
-              icon: Icons.settings,
-              borderRadius: BorderRadius.circular(12),
+              icon: Icons.edit,
             ),
 
             //delete option
             SlidableAction(
               onPressed: deleteTapped,
-              backgroundColor: Colors.red.shade600,
+              backgroundColor: Colors.pink.shade600,
               icon: Icons.delete,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: const BorderRadius.only(
+                  topLeft: Radius.zero,
+                  topRight: Radius.circular(8),
+                  bottomLeft: Radius.zero,
+                  bottomRight: Radius.circular(8)),
             ),
           ],
         ),
         child: Container(
-          padding: EdgeInsets.all(24),
+          padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
               color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
           child: Row(
@@ -50,7 +53,10 @@ class HabitTile extends StatelessWidget {
               //checkbox
               Checkbox(value: habitCompleted, onChanged: onChanged),
               //habit name
-              Text(habitName),
+              Text(
+                habitName,
+                style: TextStyle(fontSize: 12),
+              ),
             ],
           ),
         ),
