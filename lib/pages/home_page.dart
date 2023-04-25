@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/components/monthly_summary.dart';
-import 'package:habit_tracker/data/habit_database.dart';
-import 'package:hive/hive.dart';
+import 'package:habit_tracker/pages/mood_tracker_page.dart';
+import 'package:habit_tracker/pages/wellness_tracker_page.dart';
 
-import '../components/habit_tile.dart';
-import '../components/my_fab.dart';
-import '../components/my_alert_box.dart';
+import 'habit_tracker_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,166 +12,50 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  //data structure for todays list
-  HabitDatabase db = HabitDatabase();
-  final _myBox = Hive.box("Habit_Database");
+  int _selectedIndex = 0;
+  final _pageViewController = PageController();
+
+  //changes index when you tap navbar
+  void _onItemTapped(int index) {
+    _pageViewController.animateToPage(index,
+        duration: Duration(milliseconds: 100), curve: Curves.bounceOut);
+  }
 
   @override
-  void initState() {
-    //if there is no current habit list
-    //then it is the 1 time the app is opened EVER
-    //then create default data
-    if (_myBox.get("CURRENT_HABIT_LIST") == null) {
-      db.createDefaultData();
-    }
-    //there already exists some data
-    else {
-      db.loadData();
-    }
-
-    //update the database
-    db.updateDatabase();
-
-    super.initState();
+  void dispose() {
+    _pageViewController.dispose();
+    super.dispose();
   }
 
-  //checkbox was tapped
-  void checkboxTapped(bool? value, int index) {
-    setState(() {
-      db.todaysHabitList[index][1] = value;
-    });
-    db.updateDatabase();
-  }
-
-  //create New Habit
-  final _newHabitNameController = TextEditingController();
-
-  void createNewHabit() {
-    //show alert dialog for users to enter habit details
-    showDialog(
-        context: context,
-        builder: (context) {
-          return MyAlertBox(
-            controller: _newHabitNameController,
-            hintText: 'Enter Habit Name',
-            onCancel: cancelDialogBox,
-            onSave: saveNewHabit,
-          );
-        });
-  }
-
-  void cancelDialogBox() {
-    //clear text field
-    _newHabitNameController.clear();
-    //pop dialog box
-    Navigator.of(context).pop();
-  }
-
-  void saveNewHabit() {
-    //add new habit to todaysHabitList
-    //set state per notificare alla UI che deve refresharsi
-    setState(() {
-      db.todaysHabitList.add([_newHabitNameController.text.toString(), false]);
-    });
-    //clear text field
-    _newHabitNameController.clear();
-    //pop dialog box
-    Navigator.of(context).pop();
-
-    db.updateDatabase();
-  }
-
-  //edit existing habit
-  void saveExistingHabit(int index) {
-    //update index habitName
-    setState(() {
-      db.todaysHabitList[index][0] = _newHabitNameController.text.toString();
-    });
-    //clear text field
-    _newHabitNameController.clear();
-    //pop dialog box
-    Navigator.of(context).pop();
-
-    db.updateDatabase();
-  }
-
-  void deleteHabit(int index) {
-    //delete index
-    setState(() {
-      db.todaysHabitList.removeAt(index);
-    });
-
-    db.updateDatabase();
-  }
-
-  //open habit settings to edit
-  void openHabitSettings(int index) {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return MyAlertBox(
-              controller: _newHabitNameController,
-              hintText: db.todaysHabitList[index][0],
-              onSave: () => saveExistingHabit(index),
-              onCancel: cancelDialogBox);
-        });
-  }
+  static const List<Widget> _pages = <Widget>[
+    HabitTrackerPage(),
+    MoodTrackerPage(),
+    WellnessTrackerPage()
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.grey[300],
-        floatingActionButton: MyFloatingActionButton(
-          onPressed: createNewHabit,
-        ),
-        body: ListView(
-          children: [
-            Center(
-                child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 32),
-                decoration: BoxDecoration(
-                    color: Colors.pink[500],
-                    borderRadius: BorderRadius.circular(12)),
-                child: const Text(
-                  "Welcome back!",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    shadows: <Shadow>[
-                      Shadow(
-                        offset: Offset(-1.0, 1.0),
-                        blurRadius: 5.0,
-                        color: Color.fromARGB(24, 0, 0, 0),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )),
-            //monthly summary heatmap
-            MonthlySummary(
-                datasets: db.heatMapDataSet,
-                startDate: _myBox.get("START_DATE")),
-
-            //list of habits
-            ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: db.todaysHabitList.length,
-                itemBuilder: (context, index) {
-                  //habit tiles
-                  return HabitTile(
-                    habitName: db.todaysHabitList[index][0],
-                    habitCompleted: db.todaysHabitList[index][1],
-                    onChanged: (value) => checkboxTapped(value, index),
-                    settingsTapped: (context) => openHabitSettings(index),
-                    deleteTapped: (context) => deleteHabit(index),
-                  );
-                })
-          ],
-        ));
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Habit"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.emoji_emotions), label: "Mood"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.medical_services), label: "Wellness")
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
+      body: PageView(
+        controller: _pageViewController,
+        children: _pages,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+      ),
+    );
   }
 }
